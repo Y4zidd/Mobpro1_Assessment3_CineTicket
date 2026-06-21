@@ -10,27 +10,28 @@ import kotlinx.coroutines.flow.map
 
 class TicketRepository(private val ticketDao: TicketDao) {
 
-    // Mengambil data dari Room (Offline-First)
     fun getTicketsFromDb(email: String): Flow<List<Ticket>> {
         return ticketDao.getTickets(email).map { entities ->
             entities.map { it.toModel() }
         }
     }
 
-    // Sinkronisasi data dari API ke Room
     suspend fun refreshTickets(email: String) {
         try {
             val remoteTickets = RetrofitClient.instance.getTickets(email)
-            // Simpan ke Room (REPLACE on conflict)
             ticketDao.insertTickets(remoteTickets.map { it.toEntity() })
         } catch (e: Exception) {
-            // Biarkan data Room tetap ada jika offline
             throw e
         }
     }
 
     suspend fun addTicket(ticket: Ticket) {
         val result = RetrofitClient.instance.addTicket(ticket)
+        ticketDao.insertTicket(result.toEntity())
+    }
+
+    suspend fun updateTicket(id: String, ticket: Ticket) {
+        val result = RetrofitClient.instance.updateTicket(id, ticket)
         ticketDao.insertTicket(result.toEntity())
     }
 
