@@ -25,7 +25,7 @@ To the AI assisting with this project:
 - [x] **Task 1.3:** Setup project package structure (`ui`, `data`, `network`, `db`, `model`, `theme`).
 
 ## 🔐 Phase 2: Authentication & Profile (Rubric 2a, 2b)
-- [ ] **Task 2.1:** Implement Google Sign-In via Firebase Auth in a `LoginScreen` (Composable).
+- [x] **Task 2.1:** Implement Google Sign-In via Firebase Auth in a `LoginScreen` (Composable).
 - [ ] **Task 2.2:** Save user session securely (persistent login using DataStore/SharedPreferences). The user must stay logged in when the app is killed and restarted. Add a Logout functionality that clears the session and navigates back to `LoginScreen`.
 - [ ] **Task 2.3:** Create `ProfileScreen` (Composable). Fetch the Google account's Photo URL, Display Name, and Email. Display the photo strictly as a circle using `AsyncImage` with `.clip(CircleShape)` modifier.
 
