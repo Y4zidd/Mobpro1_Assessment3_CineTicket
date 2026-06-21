@@ -1,6 +1,8 @@
+@file:Suppress("SpellCheckingInspection")
 package com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.ticket
 
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -19,16 +21,24 @@ import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.R
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.model.Ticket
+import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.model.TmdbMovie
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.clickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTicketScreen(
     viewModel: TicketViewModel,
+    tmdbViewModel: TmdbSearchViewModel = viewModel(),
     onBackClick: () -> Unit
 ) {
     var movieTitle by remember { mutableStateOf("") }
     var review by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var showTmdbDialog by remember { mutableStateOf(false) }
     
     val isLoading by viewModel.isLoading.collectAsState()
     val addSuccess by viewModel.addSuccess.collectAsState()
@@ -68,12 +78,36 @@ fun AddTicketScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            OutlinedTextField(
-                value = movieTitle,
-                onValueChange = { movieTitle = it },
-                label = { Text(stringResource(R.string.ticket_title)) },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = movieTitle,
+                    onValueChange = { movieTitle = it },
+                    label = { Text(stringResource(R.string.ticket_title)) },
+                    modifier = Modifier.weight(1f)
+                )
+
+                Button(onClick = { showTmdbDialog = true }) {
+                    Text("Cari TMDB")
+                }
+            }
+
+            if (showTmdbDialog) {
+                TmdbSearchDialog(
+                    viewModel = tmdbViewModel,
+                    onDismiss = { showTmdbDialog = false },
+                    onMovieSelected = { movie ->
+                        movieTitle = movie.title
+                        movie.posterPath?.let { path ->
+                            imageUri = "https://image.tmdb.org/t/p/w500$path".toUri()
+                        }
+                        showTmdbDialog = false
+                    }
+                )
+            }
 
             OutlinedTextField(
                 value = review,
@@ -123,4 +157,70 @@ fun AddTicketScreen(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TmdbSearchDialog(
+    viewModel: TmdbSearchViewModel,
+    onDismiss: () -> Unit,
+    onMovieSelected: (TmdbMovie) -> Unit
+) {
+    var query by remember { mutableStateOf("") }
+    val searchResults by viewModel.searchResults.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Cari Film di TMDB") },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = { Text("Judul Film") },
+                    trailingIcon = {
+                        IconButton(onClick = { viewModel.searchMovies(query) }) {
+                            Icon(Icons.Default.Search, contentDescription = "Search")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else {
+                    LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                        items(searchResults) { movie ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onMovieSelected(movie) }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (movie.posterPath != null) {
+                                    AsyncImage(
+                                        model = "https://image.tmdb.org/t/p/w200${movie.posterPath}",
+                                        contentDescription = null,
+                                        modifier = Modifier.size(50.dp, 75.dp),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Box(modifier = Modifier.size(50.dp, 75.dp))
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(movie.title, style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Tutup")
+            }
+        }
+    )
 }
