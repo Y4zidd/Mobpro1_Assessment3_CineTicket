@@ -11,7 +11,10 @@ data class TicketEntity(
     val userEmail: String,
     val movieTitle: String,
     val review: String,
-    val imageUrl: String
+    val posterUrl: String,
+    val personalPhotoUrls: String,
+    val rating: Float,
+    val isSynced: Boolean
 )
 
 fun TicketEntity.toModel() = Ticket(
@@ -19,13 +22,19 @@ fun TicketEntity.toModel() = Ticket(
     userEmail = userEmail,
     movieTitle = movieTitle,
     review = review,
-    imageUrl = imageUrl
+    posterUrl = posterUrl,
+    personalPhotoUrls = personalPhotoUrls,
+    rating = rating,
+    isSynced = isSynced
 )
 
 fun Ticket.toEntity() = TicketEntity(
     id = id ?: "",
-    userEmail = userEmail,
-    movieTitle = movieTitle,
-    review = review,
-    imageUrl = imageUrl
+    userEmail = userEmail ?: "",
+    movieTitle = movieTitle ?: "",
+    review = review ?: "",
+    posterUrl = posterUrl ?: "",
+    personalPhotoUrls = personalPhotoUrls ?: personalPhotoUrl ?: "",
+    rating = rating ?: 0f,
+    isSynced = isSynced
 )

@@ -9,7 +9,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.auth.LoginScreen
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.auth.LoginViewModel
-import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.profile.ProfileScreen
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.ticket.AddTicketScreen
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.ticket.EditTicketScreen
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.ticket.TicketListScreen
@@ -17,7 +16,6 @@ import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
-    object Profile : Screen("profile")
     object Home : Screen("home")
     object AddTicket : Screen("add_ticket")
     object EditTicket : Screen("edit_ticket/{ticketId}") {
@@ -52,8 +50,11 @@ fun NavGraph(
                 onAddTicketClick = {
                     navController.navigate(Screen.AddTicket.route)
                 },
-                onProfileClick = {
-                    navController.navigate(Screen.Profile.route)
+                onLogout = {
+                    loginViewModel.logout()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 },
                 onEditClick = { ticketId ->
                     navController.navigate(Screen.EditTicket.createRoute(ticketId))
@@ -80,16 +81,6 @@ fun NavGraph(
                 viewModel = ticketViewModel,
                 onBackClick = {
                     navController.popBackStack()
-                }
-            )
-        }
-        composable(Screen.Profile.route) {
-            ProfileScreen(
-                onLogout = {
-                    loginViewModel.logout()
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
                 }
             )
         }

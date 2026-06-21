@@ -6,11 +6,19 @@ data class Ticket(
     @SerializedName("id")
     val id: String? = null,
     @SerializedName("userEmail")
-    val userEmail: String,
+    val userEmail: String? = "",
     @SerializedName("movieTitle")
-    val movieTitle: String,
+    val movieTitle: String? = "",
     @SerializedName("review")
-    val review: String,
-    @SerializedName("imageUrl")
-    val imageUrl: String
+    val review: String? = "",
+    @SerializedName("posterUrl")
+    val posterUrl: String? = "",
+    @SerializedName("personalPhotoUrls")
+    val personalPhotoUrls: String? = "",
+    @SerializedName("personalPhotoUrl")
+    val personalPhotoUrl: String? = "",
+    @SerializedName("rating")
+    val rating: Float? = 0f,
+    @Transient // Do not send to MockAPI
+    val isSynced: Boolean = true
 )

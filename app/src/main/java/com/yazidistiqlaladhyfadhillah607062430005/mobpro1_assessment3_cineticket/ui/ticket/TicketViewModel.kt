@@ -43,6 +43,7 @@ class TicketViewModel(application: Application) : AndroidViewModel(application) 
             _isLoading.value = true
             _error.value = null
             try {
+                repository.syncPendingTickets(email)
                 repository.refreshTickets(email)
             } catch (e: Exception) {
                 _error.value = e.localizedMessage ?: "Offline mode: Gagal sinkronisasi"
@@ -61,7 +62,7 @@ class TicketViewModel(application: Application) : AndroidViewModel(application) 
                 repository.addTicket(ticket)
                 _addSuccess.value = true
             } catch (e: Exception) {
-                _error.value = e.localizedMessage ?: "Gagal menambah tiket"
+                _error.value = e.localizedMessage ?: "Gagal menyimpan tiket lokal"
             } finally {
                 _isLoading.value = false
             }
@@ -77,7 +78,7 @@ class TicketViewModel(application: Application) : AndroidViewModel(application) 
                 repository.updateTicket(id, ticket)
                 _addSuccess.value = true
             } catch (e: Exception) {
-                _error.value = e.localizedMessage ?: "Gagal memperbarui tiket"
+                _error.value = e.localizedMessage ?: "Gagal menyimpan tiket lokal"
             } finally {
                 _isLoading.value = false
             }

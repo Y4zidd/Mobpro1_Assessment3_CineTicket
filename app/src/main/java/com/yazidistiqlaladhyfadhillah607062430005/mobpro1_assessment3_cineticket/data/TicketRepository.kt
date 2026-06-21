@@ -7,6 +7,7 @@ import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.network.RetrofitClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.util.UUID
 
 class TicketRepository(private val ticketDao: TicketDao) {
 
@@ -19,24 +20,66 @@ class TicketRepository(private val ticketDao: TicketDao) {
     suspend fun refreshTickets(email: String) {
         try {
             val remoteTickets = RetrofitClient.instance.getTickets(email)
-            ticketDao.insertTickets(remoteTickets.map { it.toEntity() })
+            // Save remote tickets (always synced = true)
+            ticketDao.insertTickets(remoteTickets.map { it.toEntity().copy(isSynced = true) })
         } catch (e: Exception) {
             throw e
         }
     }
 
     suspend fun addTicket(ticket: Ticket) {
-        val result = RetrofitClient.instance.addTicket(ticket)
-        ticketDao.insertTicket(result.toEntity())
+        try {
+            val result = RetrofitClient.instance.addTicket(ticket)
+            ticketDao.insertTicket(result.toEntity().copy(isSynced = true))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Offline save!
+            val localTicket = ticket.copy(
+                id = UUID.randomUUID().toString(),
+                isSynced = false
+            )
+            ticketDao.insertTicket(localTicket.toEntity())
+        }
     }
 
     suspend fun updateTicket(id: String, ticket: Ticket) {
-        val result = RetrofitClient.instance.updateTicket(id, ticket)
-        ticketDao.insertTicket(result.toEntity())
+        try {
+            val result = RetrofitClient.instance.updateTicket(id, ticket)
+            ticketDao.insertTicket(result.toEntity().copy(isSynced = true))
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Offline save!
+            val localTicket = ticket.copy(id = id, isSynced = false)
+            ticketDao.insertTicket(localTicket.toEntity())
+        }
     }
 
     suspend fun deleteTicket(id: String) {
         RetrofitClient.instance.deleteTicket(id)
         ticketDao.deleteById(id)
+    }
+
+    suspend fun syncPendingTickets(email: String) {
+        val unsynced = ticketDao.getUnsyncedTickets(email)
+        for (entity in unsynced) {
+            try {
+                val ticket = entity.toModel()
+                if (ticket.id?.contains("-") == true) {
+                    // It was created offline (has UUID)
+                    val result = RetrofitClient.instance.addTicket(ticket)
+                    ticketDao.deleteById(entity.id) // delete local temporary UUID
+                    ticketDao.insertTicket(result.toEntity().copy(isSynced = true))
+                } else {
+                    // It was updated offline
+                    ticket.id?.let {
+                        val result = RetrofitClient.instance.updateTicket(it, ticket)
+                        ticketDao.insertTicket(result.toEntity().copy(isSynced = true))
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Still offline or failed, skip for now
+            }
+        }
     }
 }

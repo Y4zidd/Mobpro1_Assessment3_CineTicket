@@ -5,8 +5,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TicketDao {
-    @Query("SELECT * FROM tickets WHERE userEmail = :email")
+    @Query("SELECT * FROM tickets WHERE userEmail = :email ORDER BY id DESC")
     fun getTickets(email: String): Flow<List<TicketEntity>>
+
+    @Query("SELECT * FROM tickets WHERE userEmail = :email AND isSynced = 0")
+    suspend fun getUnsyncedTickets(email: String): List<TicketEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTickets(tickets: List<TicketEntity>)

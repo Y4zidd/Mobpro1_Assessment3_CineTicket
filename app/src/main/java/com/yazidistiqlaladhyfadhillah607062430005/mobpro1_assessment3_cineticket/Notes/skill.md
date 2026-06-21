@@ -26,26 +26,26 @@ To the AI assisting with this project:
 
 ## 🔐 Phase 2: Authentication & Profile (Rubric 2a, 2b)
 - [x] **Task 2.1:** Implement Google Sign-In via Firebase Auth in a `LoginScreen` (Composable).
-- [ ] **Task 2.2:** Save user session securely (persistent login using DataStore/SharedPreferences). The user must stay logged in when the app is killed and restarted. Add a Logout functionality that clears the session and navigates back to `LoginScreen`.
-- [ ] **Task 2.3:** Create `ProfileScreen` (Composable). Fetch the Google account's Photo URL, Display Name, and Email. Display the photo strictly as a circle using `AsyncImage` with `.clip(CircleShape)` modifier.
+- [x] **Task 2.2:** Save user session securely (persistent login using DataStore/SharedPreferences). The user must stay logged in when the app is killed and restarted. Add a Logout functionality that clears the session and navigates back to `LoginScreen`.
+- [x] **Task 2.3:** Create `ProfileScreen` (Composable). Fetch the Google account's Photo URL, Display Name, and Email. Display the photo strictly as a circle using `AsyncImage` with `.clip(CircleShape)` modifier.
 
 ## 🌐 Phase 3: Networking - Fetching Data (Rubric 2c, 2f)
-- [ ] **Task 3.1:** Setup Retrofit client, DTOs, and API Interfaces.
-- [ ] **Task 3.2:** Implement GET request to MockAPI to fetch the user's specific ticket list. The request MUST filter data based on the currently logged-in user's email or ID. Parse JSON and display images using Coil in a `LazyColumn`.
-- [ ] **Task 3.3:** Implement Global Loading Indicator using `CircularProgressIndicator` for all network requests.
-- [ ] **Task 3.4:** Implement error handling and UI state for when there is NO internet connection (show a Compose Snackbar or Error Screen).
+- [x] **Task 3.1:** Setup Retrofit client, DTOs, and API Interfaces.
+- [x] **Task 3.2:** Implement GET request to MockAPI to fetch the user's specific ticket list. The request MUST filter data based on the currently logged-in user's email or ID. Parse JSON and display images using Coil in a `LazyColumn`.
+- [x] **Task 3.3:** Implement Global Loading Indicator using `CircularProgressIndicator` for all network requests.
+- [x] **Task 3.4:** Implement error handling and UI state for when there is NO internet connection (show a Compose Snackbar or Error Screen).
 
 ## 📝 Phase 4: Posting & Deleting Data (Rubric 2d, 2e)
-- [ ] **Task 4.1:** Create UI (`AddTicketScreen`) to add a new "Ticket/Diary". Requires Compose `TextField` (Review/Title) and Image Upload (Camera/Gallery using ActivityResultContracts).
-- [ ] **Task 4.2:** Implement POST request to send text and image URL to MockAPI. The `LazyColumn` list on the home screen MUST auto-update immediately on success via StateFlow.
-- [ ] **Task 4.3:** Implement DELETE functionality on the user's ticket list.
-- [ ] **Task 4.4:** Add a Compose `AlertDialog` confirmation before deleting. The `LazyColumn` list MUST auto-update immediately on success.
+- [x] **Task 4.1:** Create UI (`AddTicketScreen`) to add a new "Ticket/Diary". Requires Compose `TextField` (Review/Title) and Image Upload (Camera/Gallery using ActivityResultContracts).
+- [x] **Task 4.2:** Implement POST request to send text and image URL to MockAPI. The `LazyColumn` list on the home screen MUST auto-update immediately on success via StateFlow.
+- [x] **Task 4.3:** Implement DELETE functionality on the user's ticket list.
+- [x] **Task 4.4:** Add a Compose `AlertDialog` confirmation before deleting. The `LazyColumn` list MUST auto-update immediately on success.
 
 ## 💾 Phase 5: Offline-First & Full CRUD (Rubric 3a, 3b)
-- [ ] **Task 5.1:** Setup Room Database entities and DAOs for the user's movie tickets.
-- [ ] **Task 5.2:** Combine REST API (MockAPI) with Room Database. Fetch from API -> save to Room -> display from Room via Flow. The app must support offline-first viewing.
-- [ ] **Task 5.3:** Implement UPDATE (Edit) feature (`EditTicketScreen`). Allow users to edit their existing ticket's text/image, completing the full CRUD operations.
+- [x] **Task 5.1:** Setup Room Database entities and DAOs for the user's movie tickets.
+- [x] **Task 5.2:** Combine REST API (MockAPI) with Room Database. Fetch from API -> save to Room -> display from Room via Flow. The app must support offline-first viewing.
+- [x] **Task 5.3:** Implement UPDATE (Edit) feature (`EditTicketScreen`). Allow users to edit their existing ticket's text/image, completing the full CRUD operations.
 
 ## 🧹 Phase 6: Final Polish & Code Quality (Rubric 1a)
-- [ ] **Task 6.1:** Run "Inspect Code" in Android Studio Panda. AI must review to eliminate unused imports, hardcoded strings, and ensure 100% warning-free Compose code.
-- [ ] **Task 6.2:** Final UI/UX check (Ensure dark mode/light mode compatibility in Compose Material 3).
+- [x] **Task 6.1:** Run "Inspect Code" in Android Studio Panda. AI must review to eliminate unused imports, hardcoded strings, and ensure 100% warning-free Compose code.
+- [x] **Task 6.2:** Final UI/UX check (Ensure dark mode/light mode compatibility in Compose Material 3).

@@ -29,7 +29,7 @@ interface ApiService {
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "https://6750059b69dc1669ec19b671.mockapi.io/"
+    private const val BASE_URL = "https://6a381fe1c105017aa639ad9a.mockapi.io/"
 
     val instance: ApiService by lazy {
         Retrofit.Builder()
