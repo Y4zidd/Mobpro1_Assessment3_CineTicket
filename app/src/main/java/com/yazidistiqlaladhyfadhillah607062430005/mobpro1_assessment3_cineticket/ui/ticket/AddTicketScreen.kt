@@ -7,15 +7,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
+import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.R
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.model.Ticket
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,10 +50,10 @@ fun AddTicketScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add Movie Ticket") },
+                title = { Text(stringResource(R.string.nav_add)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cancel_action))
                     }
                 }
             )
@@ -69,26 +71,26 @@ fun AddTicketScreen(
             OutlinedTextField(
                 value = movieTitle,
                 onValueChange = { movieTitle = it },
-                label = { Text("Movie Title") },
+                label = { Text(stringResource(R.string.ticket_title)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = review,
                 onValueChange = { review = it },
-                label = { Text("Review") },
+                label = { Text(stringResource(R.string.ticket_review)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
             )
 
             Button(onClick = { launcher.launch("image/*") }) {
-                Text("Select Image from Gallery")
+                Text(stringResource(R.string.ticket_image_select))
             }
 
             imageUri?.let {
                 AsyncImage(
                     model = it,
-                    contentDescription = "Selected Image",
+                    contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
@@ -105,7 +107,7 @@ fun AddTicketScreen(
                             userEmail = user.email!!,
                             movieTitle = movieTitle,
                             review = review,
-                            imageUrl = imageUri?.toString() ?: "" // In real app, upload first
+                            imageUrl = imageUri?.toString() ?: ""
                         )
                         viewModel.addTicket(newTicket)
                     }
@@ -116,7 +118,7 @@ fun AddTicketScreen(
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Save Ticket")
+                    Text(stringResource(R.string.ticket_save))
                 }
             }
         }

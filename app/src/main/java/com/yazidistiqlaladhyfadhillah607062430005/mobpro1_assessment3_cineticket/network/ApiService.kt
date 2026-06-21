@@ -16,6 +16,12 @@ interface ApiService {
         @Body ticket: Ticket
     ): Ticket
 
+    @PUT("tickets/{id}")
+    suspend fun updateTicket(
+        @Path("id") id: String,
+        @Body ticket: Ticket
+    ): Ticket
+
     @DELETE("tickets/{id}")
     suspend fun deleteTicket(
         @Path("id") id: String
@@ -23,7 +29,6 @@ interface ApiService {
 }
 
 object RetrofitClient {
-    // Ganti URL ini dengan URL MockAPI Anda yang sebenarnya
     private const val BASE_URL = "https://6750059b69dc1669ec19b671.mockapi.io/"
 
     val instance: ApiService by lazy {
