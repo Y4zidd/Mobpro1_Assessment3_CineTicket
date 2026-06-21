@@ -1,19 +1,21 @@
 package com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.auth
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.data.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val sessionManager = SessionManager(application)
 
-    private val _user = MutableStateFlow<FirebaseUser?>(auth.currentUser)
+    private val _user = MutableStateFlow(auth.currentUser)
     val user = _user.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
@@ -28,12 +30,27 @@ class LoginViewModel : ViewModel() {
             _error.value = null
             try {
                 val result = auth.signInWithCredential(credential).await()
-                _user.value = result.user
+                val firebaseUser = result.user
+                if (firebaseUser != null) {
+                    sessionManager.saveSession(
+                        email = firebaseUser.email ?: "",
+                        name = firebaseUser.displayName ?: ""
+                    )
+                }
+                _user.value = firebaseUser
             } catch (e: Exception) {
-                _error.value = e.localizedMessage ?: "Login Gagal"
+                _error.value = e.localizedMessage ?: "Login failed"
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            auth.signOut()
+            sessionManager.clearSession()
+            _user.value = null
         }
     }
 

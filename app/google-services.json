@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "293148624625",
+    "project_id": "logical-etching-460807-k2",
+    "storage_bucket": "logical-etching-460807-k2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293148624625:android:86b167d550afdf524e4b50",
+        "android_client_info": {
+          "package_name": "com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "293148624625-j1jr3ujp0fr2j973ggejotma9tieqcgb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket",
+            "certificate_hash": "ff065be970390019faedc7b05f3173ed1b6c5ce3"
+          }
+        },
+        {
+          "client_id": "293148624625-t4dkr9rn2kligqq0shpm39s8gsilhulp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDB9G5ax8mbsClenRSyLSxuBZR4wPMZwJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "293148624625-t4dkr9rn2kligqq0shpm39s8gsilhulp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

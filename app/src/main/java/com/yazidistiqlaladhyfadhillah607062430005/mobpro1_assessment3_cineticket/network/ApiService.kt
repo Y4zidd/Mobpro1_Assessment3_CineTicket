@@ -1,0 +1,36 @@
+package com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.network
+
+import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.model.Ticket
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.*
+
+interface ApiService {
+    @GET("tickets")
+    suspend fun getTickets(
+        @Query("userEmail") email: String
+    ): List<Ticket>
+
+    @POST("tickets")
+    suspend fun addTicket(
+        @Body ticket: Ticket
+    ): Ticket
+
+    @DELETE("tickets/{id}")
+    suspend fun deleteTicket(
+        @Path("id") id: String
+    )
+}
+
+object RetrofitClient {
+    // Ganti URL ini dengan URL MockAPI Anda yang sebenarnya
+    private const val BASE_URL = "https://6750059b69dc1669ec19b671.mockapi.io/"
+
+    val instance: ApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    }
+}
