@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.R
@@ -194,7 +195,9 @@ fun TicketItem(
                     modifier = Modifier
                         .width(70.dp)
                         .fillMaxHeight(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.loading_img),
+                    error = painterResource(id = R.drawable.broken_img)
                 )
             } else {
                 Box(
@@ -299,7 +302,9 @@ fun ProfileDialog(
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.loading_img),
+                    error = painterResource(id = R.drawable.broken_img)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(

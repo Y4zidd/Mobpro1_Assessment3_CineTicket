@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -121,7 +122,9 @@ fun AddTicketScreen(
                         modifier = Modifier
                             .width(80.dp)
                             .height(120.dp),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(id = R.drawable.loading_img),
+                        error = painterResource(id = R.drawable.broken_img)
                     )
                 }
                 
@@ -186,7 +189,9 @@ fun AddTicketScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clickable { previewImageUri.value = photoUri },
-                                contentScale = ContentScale.Crop
+                                contentScale = ContentScale.Crop,
+                                placeholder = painterResource(id = R.drawable.loading_img),
+                                error = painterResource(id = R.drawable.broken_img)
                             )
                             Box(
                                 modifier = Modifier
@@ -297,7 +302,9 @@ fun AddTicketScreen(
                     model = uri,
                     contentDescription = "Zoomed Photo",
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    contentScale = ContentScale.Fit
+                    contentScale = ContentScale.Fit,
+                    placeholder = painterResource(id = R.drawable.loading_img),
+                    error = painterResource(id = R.drawable.broken_img)
                 )
             }
         }
@@ -356,7 +363,9 @@ fun TmdbSearchDialog(
                                     AsyncImage(
                                         model = "https://image.tmdb.org/t/p/w92$path",
                                         contentDescription = null,
-                                        modifier = Modifier.size(50.dp)
+                                        modifier = Modifier.size(50.dp),
+                                        placeholder = painterResource(id = R.drawable.loading_img),
+                                        error = painterResource(id = R.drawable.broken_img)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                 }
