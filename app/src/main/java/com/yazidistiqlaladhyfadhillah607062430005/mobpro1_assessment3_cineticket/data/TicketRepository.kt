@@ -8,6 +8,7 @@ import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
+import retrofit2.HttpException
 
 class TicketRepository(private val ticketDao: TicketDao) {
 
@@ -22,7 +23,15 @@ class TicketRepository(private val ticketDao: TicketDao) {
             val remoteTickets = RetrofitClient.instance.getTickets(email)
             // Save remote tickets (always synced = true)
             ticketDao.insertTickets(remoteTickets.map { it.toEntity().copy(isSynced = true) })
+        } catch (e: HttpException) {
+            if (e.code() == 404) {
+                // Ignore 404 Not Found from MockAPI, it just means no data.
+            } else {
+                e.printStackTrace()
+                throw e
+            }
         } catch (e: Exception) {
+            e.printStackTrace()
             throw e
         }
     }
@@ -55,7 +64,15 @@ class TicketRepository(private val ticketDao: TicketDao) {
     }
 
     suspend fun deleteTicket(id: String) {
-        RetrofitClient.instance.deleteTicket(id)
+        try {
+            RetrofitClient.instance.deleteTicket(id)
+        } catch (e: HttpException) {
+            if (e.code() != 404) {
+                e.printStackTrace()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         ticketDao.deleteById(id)
     }
 
