@@ -96,6 +96,7 @@ fun EditTicketScreen(
 
     LaunchedEffect(addSuccess) {
         if (addSuccess) {
+            Toast.makeText(context, "Berhasil memperbarui film!", Toast.LENGTH_SHORT).show()
             viewModel.resetAddSuccess()
             onBackClick()
         }
@@ -254,6 +255,11 @@ fun EditTicketScreen(
 
                 Button(
                     onClick = {
+                        val isDuplicate = tickets.any { it.id != ticketId && it.movieTitle.equals(movieTitle.trim(), ignoreCase = true) }
+                        if (isDuplicate) {
+                            Toast.makeText(context, "Film '$movieTitle' sudah ada di daftar Anda!", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                         if (movieTitle.isBlank()) {
                             Toast.makeText(context, context.getString(R.string.error_title_empty), Toast.LENGTH_SHORT).show()
                             return@Button
@@ -264,10 +270,6 @@ fun EditTicketScreen(
                         }
                         if (review.isBlank()) {
                             Toast.makeText(context, context.getString(R.string.error_review_empty), Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-                        if (personalPhotos.isEmpty()) {
-                            Toast.makeText(context, context.getString(R.string.error_photo_min), Toast.LENGTH_SHORT).show()
                             return@Button
                         }
                         if (personalPhotos.size > 5) {

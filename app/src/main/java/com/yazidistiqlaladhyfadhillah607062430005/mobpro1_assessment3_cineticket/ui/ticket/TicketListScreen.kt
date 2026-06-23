@@ -14,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.ui.Modifier
@@ -28,6 +30,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.R
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.model.Ticket
 import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.ui.components.StarRatingBar
+import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.utils.NetworkConnectivityObserver
+import com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket.utils.ConnectivityObserver
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +49,20 @@ fun TicketListScreen(
     val ticketToDelete = ticketToDeleteState.value
     val showDialog = remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val networkStatus by NetworkConnectivityObserver(context).observe().collectAsState(
+        initial = ConnectivityObserver.Status.Unavailable
+    )
+
+    LaunchedEffect(networkStatus) {
+        if (networkStatus == ConnectivityObserver.Status.Available) {
+            val hasPending = tickets.any { !it.isSynced }
+            if (hasPending) {
+                Toast.makeText(context, "Koneksi pulih. Menyinkronkan data ke server...", Toast.LENGTH_SHORT).show()
+                user?.email?.let { viewModel.fetchTickets(it) }
+            }
+        }
+    }
 
     LaunchedEffect(error) {
         error?.let {
@@ -73,6 +91,7 @@ fun TicketListScreen(
                     onClick = {
                         ticketToDelete.id?.let { id ->
                             viewModel.deleteTicket(id)
+                            Toast.makeText(context, "Film berhasil dihapus!", Toast.LENGTH_SHORT).show()
                         }
                         ticketToDeleteState.value = null
                     }
@@ -184,7 +203,8 @@ fun TicketItem(
         Row(
             modifier = Modifier
                 .padding(8.dp)
-                .height(110.dp),
+                .height(IntrinsicSize.Min)
+                .defaultMinSize(minHeight = 110.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // TMDB Poster
@@ -238,14 +258,14 @@ fun TicketItem(
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(4.dp))
-                
                 // Read-only star rating
                 StarRatingBar(
                     rating = ticket.rating ?: 0f,
                     onRatingChanged = {},
                     isReadOnly = true,
-                    modifier = Modifier.height(20.dp)
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .height(20.dp)
                 )
                 
                 Text(

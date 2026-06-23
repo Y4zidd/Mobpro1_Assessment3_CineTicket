@@ -59,6 +59,7 @@ fun AddTicketScreen(
     
     val isLoading by viewModel.isLoading.collectAsState()
     val addSuccess by viewModel.addSuccess.collectAsState()
+    val tickets by viewModel.tickets.collectAsState()
     val context = LocalContext.current
     val user = FirebaseAuth.getInstance().currentUser
 
@@ -77,6 +78,7 @@ fun AddTicketScreen(
 
     LaunchedEffect(addSuccess) {
         if (addSuccess) {
+            Toast.makeText(context, "Berhasil menambahkan film!", Toast.LENGTH_SHORT).show()
             viewModel.resetAddSuccess()
             onBackClick()
         }
@@ -230,6 +232,11 @@ fun AddTicketScreen(
 
             Button(
                 onClick = {
+                    val isDuplicate = tickets.any { it.movieTitle.equals(movieTitle.trim(), ignoreCase = true) }
+                    if (isDuplicate) {
+                        Toast.makeText(context, "Film '$movieTitle' sudah ada di daftar Anda!", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
                     if (movieTitle.isBlank()) {
                         Toast.makeText(context, context.getString(R.string.error_title_empty), Toast.LENGTH_SHORT).show()
                         return@Button
@@ -240,10 +247,6 @@ fun AddTicketScreen(
                     }
                     if (review.isBlank()) {
                         Toast.makeText(context, context.getString(R.string.error_review_empty), Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    if (personalPhotos.isEmpty()) {
-                        Toast.makeText(context, context.getString(R.string.error_photo_min), Toast.LENGTH_SHORT).show()
                         return@Button
                     }
                     if (personalPhotos.size > 5) {
