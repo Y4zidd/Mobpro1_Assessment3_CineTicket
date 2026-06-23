@@ -54,11 +54,14 @@ fun TicketListScreen(
         initial = ConnectivityObserver.Status.Unavailable
     )
 
+    var isManualRefresh by remember { mutableStateOf(false) }
+
     LaunchedEffect(networkStatus) {
         if (networkStatus == ConnectivityObserver.Status.Available) {
             val hasPending = tickets.any { !it.isSynced }
             if (hasPending) {
                 Toast.makeText(context, "Koneksi pulih. Menyinkronkan data ke server...", Toast.LENGTH_SHORT).show()
+                isManualRefresh = true
                 user?.email?.let { viewModel.fetchTickets(it) }
             }
         }
@@ -72,6 +75,13 @@ fun TicketListScreen(
 
     LaunchedEffect(Unit) {
         user?.email?.let { viewModel.fetchTickets(it) }
+    }
+
+    LaunchedEffect(isLoading) {
+        if (isManualRefresh && !isLoading && error == null) {
+            Toast.makeText(context, "Data berhasil diperbarui", Toast.LENGTH_SHORT).show()
+            isManualRefresh = false
+        }
     }
 
     if (ticketToDelete != null) {
@@ -117,6 +127,7 @@ fun TicketListScreen(
                 ),
                 actions = {
                     IconButton(onClick = { 
+                        isManualRefresh = true
                         user?.email?.let { viewModel.fetchTickets(it) } 
                     }) {
                         Icon(
@@ -141,38 +152,49 @@ fun TicketListScreen(
             }
         }
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            contentAlignment = Alignment.Center
+                .padding(innerPadding)
         ) {
-            val currentError = error
-            if (isLoading && tickets.isEmpty()) {
-                CircularProgressIndicator()
-            } else if (tickets.isEmpty()) {
-                if (currentError != null) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "Tidak ada internet & data kosong", color = MaterialTheme.colorScheme.error)
-                        Button(onClick = { user?.email?.let { viewModel.fetchTickets(it) } }) {
-                            Text(stringResource(R.string.error_retry))
+            if (isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                val currentError = error
+                if (tickets.isEmpty()) {
+                    if (currentError != null && !isLoading) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "Tidak ada internet & data kosong", color = MaterialTheme.colorScheme.error)
+                            Button(onClick = { user?.email?.let { viewModel.fetchTickets(it) } }) {
+                                Text(stringResource(R.string.error_retry))
+                            }
                         }
+                    } else if (!isLoading) {
+                        Text(stringResource(R.string.ticket_empty))
                     }
                 } else {
-                    Text(stringResource(R.string.ticket_empty))
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(tickets) { ticket ->
-                        TicketItem(
-                            ticket = ticket,
-                            onDeleteClick = { ticketToDeleteState.value = ticket },
-                            onItemClick = { ticket.id?.let { onEditClick(it) } }
-                        )
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(tickets) { ticket ->
+                            TicketItem(
+                                ticket = ticket,
+                                onDeleteClick = { ticketToDeleteState.value = ticket },
+                                onItemClick = { ticket.id?.let { onEditClick(it) } }
+                            )
+                        }
                     }
                 }
             }
@@ -251,7 +273,7 @@ fun TicketItem(
                     if (!ticket.isSynced) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "⏳ Menunggu Jaringan",
+                            text = "Menunggu Jaringan",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -267,6 +289,14 @@ fun TicketItem(
                         .padding(vertical = 4.dp)
                         .height(20.dp)
                 )
+
+                if (!ticket.dateWatched.isNullOrBlank()) {
+                    Text(
+                        text = "Ditonton pada: ${ticket.dateWatched}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
                 
                 Text(
                     text = ticket.review ?: "",
@@ -281,7 +311,7 @@ fun TicketItem(
                     if (photoCount > 0) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "📸 $photoCount Cinema Photo${if (photoCount > 1) "s" else ""} Included",
+                                text = "$photoCount Foto Tersimpan",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary
                             )

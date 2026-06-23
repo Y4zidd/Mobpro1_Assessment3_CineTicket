@@ -14,6 +14,7 @@ data class TicketEntity(
     val posterUrl: String,
     val personalPhotoUrls: String,
     val rating: Float,
+    val dateWatched: String,
     val isSynced: Boolean
 )
 
@@ -25,6 +26,7 @@ fun TicketEntity.toModel() = Ticket(
     posterUrl = posterUrl,
     personalPhotoUrls = personalPhotoUrls,
     rating = rating,
+    dateWatched = dateWatched,
     isSynced = isSynced
 )
 
@@ -36,5 +38,6 @@ fun Ticket.toEntity() = TicketEntity(
     posterUrl = posterUrl ?: "",
     personalPhotoUrls = personalPhotoUrls ?: personalPhotoUrl ?: "",
     rating = rating ?: 0f,
+    dateWatched = dateWatched ?: "",
     isSynced = isSynced
 )

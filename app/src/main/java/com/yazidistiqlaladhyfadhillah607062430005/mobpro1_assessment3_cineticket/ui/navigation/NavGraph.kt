@@ -2,6 +2,8 @@ package com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticke
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -45,6 +47,7 @@ fun NavGraph(
         }
         composable(Screen.Home.route) {
             val ticketViewModel: TicketViewModel = viewModel()
+            val context = LocalContext.current
             TicketListScreen(
                 viewModel = ticketViewModel,
                 onAddTicketClick = {
@@ -52,6 +55,7 @@ fun NavGraph(
                 },
                 onLogout = {
                     loginViewModel.logout()
+                    Toast.makeText(context, "Berhasil log out", Toast.LENGTH_SHORT).show()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }

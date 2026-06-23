@@ -19,6 +19,8 @@ data class Ticket(
     val personalPhotoUrl: String? = "",
     @SerializedName("rating")
     val rating: Float? = 0f,
+    @SerializedName("dateWatched")
+    val dateWatched: String? = "",
     @Transient // Do not send to MockAPI
     val isSynced: Boolean = true
 )

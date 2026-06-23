@@ -2,6 +2,7 @@ package com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticke
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -15,6 +16,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Edit
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,21 +70,37 @@ fun EditTicketScreen(
     var review by remember { mutableStateOf("") }
     var rating by remember { mutableFloatStateOf(0f) }
     var posterUrl by remember { mutableStateOf("") }
+    var dateWatched by remember { mutableStateOf("") }
     val personalPhotos = remember { mutableStateListOf<Uri>() }
     var showTmdbDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
     val previewImageUri = remember { mutableStateOf<Uri?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val showUnsavedDialog = remember { mutableStateOf(false) }
+
+    val hasUnsavedChanges = movieTitle != (ticket?.movieTitle ?: "") ||
+            review != (ticket?.review ?: "") ||
+            rating != (ticket?.rating ?: 0f) ||
+            dateWatched != (ticket?.dateWatched ?: "") ||
+            posterUrl != (ticket?.posterUrl ?: "") ||
+            personalPhotos.joinToString(",") != (ticket?.personalPhotoUrls ?: "")
+
+    BackHandler(enabled = hasUnsavedChanges) {
+        showUnsavedDialog.value = true
+    }
     
     // Inisialisasi data saat ticket ditemukan
     LaunchedEffect(ticket) {
-        ticket?.let {
-            movieTitle = it.movieTitle ?: ""
-            review = it.review ?: ""
-            rating = it.rating ?: 0f
-            posterUrl = it.posterUrl ?: ""
+        if (ticket != null) {
+            movieTitle = ticket.movieTitle ?: ""
+            review = ticket.review ?: ""
+            rating = ticket.rating ?: 0f
+            posterUrl = ticket.posterUrl ?: ""
+            dateWatched = ticket.dateWatched ?: ""
             
             personalPhotos.clear()
-            it.personalPhotoUrls?.split(",")?.filter { url -> url.isNotEmpty() }?.forEach { url ->
+            ticket.personalPhotoUrls?.split(",")?.filter { url -> url.isNotEmpty() }?.forEach { url ->
                 personalPhotos.add(url.toUri())
             }
         }
@@ -85,6 +108,13 @@ fun EditTicketScreen(
 
     val isLoading by viewModel.isLoading.collectAsState()
     val addSuccess by viewModel.addSuccess.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, "Gagal: $it", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -111,7 +141,13 @@ fun EditTicketScreen(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { 
+                        if (hasUnsavedChanges) {
+                            showUnsavedDialog.value = true 
+                        } else {
+                            onBackClick() 
+                        }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -121,11 +157,53 @@ fun EditTicketScreen(
             )
         }
     ) { innerPadding ->
+        if (showUnsavedDialog.value) {
+            AlertDialog(
+                onDismissRequest = { showUnsavedDialog.value = false },
+                title = { Text("Perubahan Belum Disimpan") },
+                text = { Text("Anda telah mengubah data film ini. Yakin ingin membuang perubahan dan kembali?") },
+                confirmButton = {
+                    TextButton(onClick = { 
+                        showUnsavedDialog.value = false
+                        Toast.makeText(context, "Perubahan dibatalkan. Film batal diperbarui.", Toast.LENGTH_SHORT).show()
+                        onBackClick() 
+                    }) {
+                        Text("Buang Perubahan", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showUnsavedDialog.value = false }) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                }
+            )
+        }
+
         if (ticket == null && !isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.ticket_not_found))
             }
         } else {
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            datePickerState.selectedDateMillis?.let { millis ->
+                                val formatter = SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID"))
+                                dateWatched = formatter.format(Date(millis))
+                            }
+                            showDatePicker = false
+                        }) { Text("OK") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -135,38 +213,81 @@ fun EditTicketScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
+                ElevatedCard(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                 ) {
-                    if (posterUrl.isNotEmpty()) {
-                        AsyncImage(
-                            model = posterUrl,
-                            contentDescription = "Movie Poster",
-                            modifier = Modifier
-                                .width(80.dp)
-                                .height(120.dp),
-                            contentScale = ContentScale.Crop,
-                            placeholder = painterResource(id = R.drawable.loading_img),
-                            error = painterResource(id = R.drawable.broken_img)
-                        )
-                    }
-                    
-                    Column(modifier = Modifier.weight(1f)) {
-                        OutlinedTextField(
-                            value = movieTitle,
-                            onValueChange = { movieTitle = it },
-                            label = { Text(stringResource(R.string.ticket_title)) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            if (posterUrl.isNotEmpty()) {
+                                AsyncImage(
+                                    model = posterUrl,
+                                    contentDescription = "Movie Poster",
+                                    modifier = Modifier
+                                        .width(100.dp)
+                                        .height(150.dp),
+                                    contentScale = ContentScale.Crop,
+                                    placeholder = painterResource(id = R.drawable.loading_img),
+                                    error = painterResource(id = R.drawable.broken_img)
+                                )
+                            }
+                            
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedTextField(
+                                    value = movieTitle,
+                                    onValueChange = { movieTitle = it },
+                                    label = { Text(stringResource(R.string.ticket_title)) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) }
+                                )
 
-                        Button(onClick = { showTmdbDialog = true }, modifier = Modifier.fillMaxWidth()) {
-                            Text("Cari Film di TMDB")
+                                Button(onClick = { showTmdbDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                                    Text("Cari Film di TMDB")
+                                }
+                            }
                         }
-                    }
-                }
 
+                        OutlinedTextField(
+                            value = dateWatched,
+                            onValueChange = { },
+                            label = { Text("Tanggal Nonton") },
+                            modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+                            enabled = false,
+                            readOnly = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) }
+                        )
+
+                        OutlinedTextField(
+                            value = review,
+                            onValueChange = { review = it },
+                            label = { Text(stringResource(R.string.ticket_review)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 3,
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) }
+                        )
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                            Text("Rating", style = MaterialTheme.typography.titleMedium)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            StarRatingBar(
+                                rating = rating,
+                                onRatingChanged = { rating = it }
+                            )
+                        }
                 if (showTmdbDialog) {
                     TmdbSearchDialog(
                         viewModel = tmdbViewModel,
@@ -181,19 +302,6 @@ fun EditTicketScreen(
                     )
                 }
 
-                Text("Rating:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
-                StarRatingBar(
-                    rating = rating,
-                    onRatingChanged = { rating = it }
-                )
-
-                OutlinedTextField(
-                    value = review,
-                    onValueChange = { review = it },
-                    label = { Text(stringResource(R.string.ticket_review)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3
-                )
 
             if (personalPhotos.size < 5) {
                 Button(onClick = { launcher.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
@@ -236,6 +344,9 @@ fun EditTicketScreen(
                             }
                         }
                     }
+                }
+            }
+            
                 }
             }
 
@@ -292,7 +403,8 @@ fun EditTicketScreen(
                                         review = review,
                                         posterUrl = posterUrl,
                                         personalPhotoUrls = processedPhotos.joinToString(",") { it.toString() },
-                                        rating = rating
+                                        rating = rating,
+                                        dateWatched = dateWatched
                                     )
                                     viewModel.updateTicket(ticketId, updatedTicket)
                                 }

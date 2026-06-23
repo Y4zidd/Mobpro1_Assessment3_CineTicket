@@ -16,6 +16,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Edit
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -52,8 +58,11 @@ fun AddTicketScreen(
     var review by remember { mutableStateOf("") }
     var rating by remember { mutableFloatStateOf(0f) }
     var posterUrl by remember { mutableStateOf("") }
+    var dateWatched by remember { mutableStateOf("") }
     val personalPhotos = remember { mutableStateListOf<Uri>() }
     var showTmdbDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
     val previewImageUri = remember { mutableStateOf<Uri?>(null) }
     val coroutineScope = rememberCoroutineScope()
     
@@ -103,6 +112,26 @@ fun AddTicketScreen(
             )
         }
     ) { innerPadding ->
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val formatter = SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID"))
+                            dateWatched = formatter.format(Date(millis))
+                        }
+                        showDatePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Batal") }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -112,38 +141,81 @@ fun AddTicketScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             ) {
-                if (posterUrl.isNotEmpty()) {
-                    AsyncImage(
-                        model = posterUrl,
-                        contentDescription = "Movie Poster",
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(120.dp),
-                        contentScale = ContentScale.Crop,
-                        placeholder = painterResource(id = R.drawable.loading_img),
-                        error = painterResource(id = R.drawable.broken_img)
-                    )
-                }
-                
-                Column(modifier = Modifier.weight(1f)) {
-                    OutlinedTextField(
-                        value = movieTitle,
-                        onValueChange = { movieTitle = it },
-                        label = { Text(stringResource(R.string.ticket_title)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (posterUrl.isNotEmpty()) {
+                            AsyncImage(
+                                model = posterUrl,
+                                contentDescription = "Movie Poster",
+                                modifier = Modifier
+                                    .width(100.dp)
+                                    .height(150.dp),
+                                contentScale = ContentScale.Crop,
+                                placeholder = painterResource(id = R.drawable.loading_img),
+                                error = painterResource(id = R.drawable.broken_img)
+                            )
+                        }
+                        
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = movieTitle,
+                                onValueChange = { movieTitle = it },
+                                label = { Text(stringResource(R.string.ticket_title)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null) }
+                            )
 
-                    Button(onClick = { showTmdbDialog = true }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Cari Film di TMDB")
+                            Button(onClick = { showTmdbDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                                Text("Cari Film di TMDB")
+                            }
+                        }
                     }
-                }
-            }
 
+                    OutlinedTextField(
+                        value = dateWatched,
+                        onValueChange = { },
+                        label = { Text("Tanggal Nonton") },
+                        modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
+                        enabled = false,
+                        readOnly = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) }
+                    )
+
+                    OutlinedTextField(
+                        value = review,
+                        onValueChange = { review = it },
+                        label = { Text(stringResource(R.string.ticket_review)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) }
+                    )
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                        Text("Rating", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        StarRatingBar(
+                            rating = rating,
+                            onRatingChanged = { rating = it }
+                        )
+                    }
             if (showTmdbDialog) {
                 TmdbSearchDialog(
                     viewModel = tmdbViewModel,
@@ -157,20 +229,6 @@ fun AddTicketScreen(
                     }
                 )
             }
-
-            Text("Rating:", style = MaterialTheme.typography.titleMedium, modifier = Modifier.align(Alignment.Start))
-            StarRatingBar(
-                rating = rating,
-                onRatingChanged = { rating = it }
-            )
-
-            OutlinedTextField(
-                value = review,
-                onValueChange = { review = it },
-                label = { Text(stringResource(R.string.ticket_review)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3
-            )
 
             if (personalPhotos.size < 5) {
                 Button(onClick = { launcher.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
@@ -213,6 +271,9 @@ fun AddTicketScreen(
                             }
                         }
                     }
+                }
+            }
+            
                 }
             }
 
@@ -270,7 +331,8 @@ fun AddTicketScreen(
                                     review = review,
                                     posterUrl = posterUrl,
                                     personalPhotoUrls = processedPhotos.joinToString(",") { it.toString() },
-                                    rating = rating
+                                    rating = rating,
+                                    dateWatched = dateWatched
                                 )
                                 viewModel.addTicket(newTicket)
                             }

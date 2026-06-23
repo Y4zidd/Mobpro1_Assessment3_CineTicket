@@ -27,9 +27,9 @@
     <string name="error_photo_min">Please add at least 1 cinema photo</string>
     <string name="error_photo_max">You can only add up to 5 photos</string>
 
-    <string name="delete_confirm_title">Delete Ticket</string>
-    <string name="delete_confirm_msg">Are you sure you want to delete this ticket review for \'%1$s\'?</string>
-    <string name="delete_action">Delete</string>
+    <string name="delete_confirm_title">Hapus Film</string>
+    <string name="delete_confirm_msg">Apakah Anda yakin ingin menghapus film \'%1$s\'?</string>
+    <string name="delete_action">Hapus</string>
     <string name="cancel_action">Cancel</string>
 
     <string name="error_fetch">Failed to fetch data</string>
