@@ -17,6 +17,7 @@ if (localPropertiesFile.exists()) {
 }
 //noinspection SpellCheckingInspection
 val tmdbApiKey: String = localProperties.getProperty("TMDB_API_KEY") ?: ""
+val imgbbApiKey: String = localProperties.getProperty("IMGBB_API_KEY") ?: ""
 
 android {
     namespace = "com.yazidistiqlaladhyfadhillah607062430005.mobpro1_assessment3_cineticket"
@@ -31,6 +32,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
+        buildConfigField("String", "IMGBB_API_KEY", "\"$imgbbApiKey\"")
     }
 
     buildTypes {
